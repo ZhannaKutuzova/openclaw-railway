@@ -48,9 +48,11 @@ ENV NODE_ENV=production
 
 USER node
 
-RUN mkdir -p /home/node/.openclaw && \
-    echo '{"gateway":{"bind":"lan","controlUi":{"dangerouslyAllowHostHeaderOriginFallback":true}},"channels":{"telegram":{"dmPolicy":"open","allowFrom":["*"]},"discord":{"dmPolicy":"open","allowFrom":["*"]},"whatsapp":{"dmPolicy":"open","allowFrom":["*"]}}}' \
+RUN mkdir -p /home/node/.openclaw/workspace && \
+    echo '{"gateway":{"bind":"lan","controlUi":{"dangerouslyAllowHostHeaderOriginFallback":true}},"agents":{"defaults":{"model":"anthropic/claude-sonnet-4-6"}},"channels":{"telegram":{"dmPolicy":"open","allowFrom":["*"]},"discord":{"dmPolicy":"open","allowFrom":["*"]},"whatsapp":{"dmPolicy":"open","allowFrom":["*"]}}}' \
     > /home/node/.openclaw/openclaw.json && \
-    chown node:node /home/node/.openclaw/openclaw.json
+    printf '#!/bin/sh\nset -e\nif [ -n "$CLAW_KNOWLEDGE_BASE" ]; then\n  printf "%%s" "$CLAW_KNOWLEDGE_BASE" > /home/node/.openclaw/workspace/IDENTITY.md\nfi\nexec node openclaw.mjs gateway --allow-unconfigured --bind lan\n' \
+    > /home/node/.openclaw/entrypoint.sh && \
+    chmod +x /home/node/.openclaw/entrypoint.sh
 
-CMD ["node", "openclaw.mjs", "gateway", "--allow-unconfigured", "--bind", "lan"]
+CMD ["/home/node/.openclaw/entrypoint.sh"]
