@@ -53,11 +53,11 @@ ENV NODE_ENV=production
 USER node
 
 RUN mkdir -p /home/node/.openclaw/workspace \
-    /home/node/.openclaw/agents/main/sessions \
-    /home/node/.openclaw/credentials && \
+ /home/node/.openclaw/agents/main/sessions \
+ /home/node/.openclaw/credentials && \
  echo '{"gateway":{"bind":"lan","trustedProxies":["100.64.0.0/10","10.0.0.0/8","172.16.0.0/12"],"auth":{"mode":"token"},"controlUi":{"dangerouslyAllowHostHeaderOriginFallback":true,"dangerouslyDisableDeviceAuth":true,"allowInsecureAuth":true}},"agents":{"defaults":{"model":"anthropic/claude-sonnet-4-6"}},"channels":{"telegram":{"dmPolicy":"open","allowFrom":["*"]},"discord":{"dmPolicy":"open","allowFrom":["*"]},"whatsapp":{"dmPolicy":"open","allowFrom":["*"]}}}' \
  > /home/node/.openclaw/openclaw.json && \
- printf '#!/bin/sh\nset -e\nif [ -n "$CLAW_KNOWLEDGE_BASE" ]; then\n  printf "%%s" "$CLAW_KNOWLEDGE_BASE" > /home/node/.openclaw/workspace/IDENTITY.md\nfi\nmkdir -p /home/node/.openclaw/agents/main/sessions /home/node/.openclaw/credentials\nif [ "$OPENCLAW_WHATSAPP_CLEAN" = "true" ]; then\n  echo "[entrypoint] Cleaning WhatsApp session data..."\n  rm -rf /home/node/.openclaw/credentials/whatsapp* /home/node/.openclaw/data/whatsapp* 2>/dev/null || true\nfi\nnode openclaw.mjs config unset voice 2>/dev/null || true\nnode openclaw.mjs doctor --fix --non-interactive 2>&1 || true\nexec node openclaw.mjs gateway --allow-unconfigured --bind lan\n' \
+ printf '#!/bin/sh\nset -e\nif [ -n \"$CLAW_KNOWLEDGE_BASE\" ]; then\n  printf \"%s\" \"$CLAW_KNOWLEDGE_BASE\" > /home/node/.openclaw/workspace/IDENTITY.md\nfi\nmkdir -p /home/node/.openclaw/agents/main/sessions /home/node/.openclaw/credentials\nif [ \"$OPENCLAW_WHATSAPP_CLEAN\" = \"true\" ]; then\n  echo \"[entrypoint] Cleaning WhatsApp session data...\"\n  rm -rf /home/node/.openclaw/credentials/whatsapp* /home/node/.openclaw/data/whatsapp* 2>/dev/null || true\nfi\nnode openclaw.mjs config unset voice 2>/dev/null || true\nexec node openclaw.mjs gateway --allow-unconfigured --bind lan\n\n' \
  > /home/node/.openclaw/entrypoint.sh && \
  chmod +x /home/node/.openclaw/entrypoint.sh
 
