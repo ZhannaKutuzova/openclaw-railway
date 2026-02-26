@@ -62,4 +62,10 @@ USER node
 # For container platforms requiring external health checks:
 #   1. Set OPENCLAW_GATEWAY_TOKEN or OPENCLAW_GATEWAY_PASSWORD env var
 #   2. Override CMD: ["node","openclaw.mjs","gateway","--allow-unconfigured","--bind","lan"]
+# Write Railway-compatible config before starting
+RUN mkdir -p /home/node/.openclaw && \
+    echo '{"gateway":{"bind":"lan","controlUi":{"dangerouslyAllowHostHeaderOriginFallback":true}}}' \
+    > /home/node/.openclaw/openclaw.json && \
+    chown node:node /home/node/.openclaw/openclaw.json
+
 CMD ["node", "openclaw.mjs", "gateway", "--allow-unconfigured", "--bind", "lan"]
