@@ -54,10 +54,12 @@ ENV NODE_ENV=production
 
 USER node
 
-RUN mkdir -p /home/node/.openclaw/workspace && \
+RUN mkdir -p /home/node/.openclaw/workspace \
+    /home/node/.openclaw/agents/main/sessions \
+    /home/node/.openclaw/credentials && \
  echo '{"gateway":{"bind":"lan","auth":{"mode":"token"},"controlUi":{"dangerouslyAllowHostHeaderOriginFallback":true,"dangerouslyDisableDeviceAuth":true,"allowInsecureAuth":true}},"agents":{"defaults":{"model":"anthropic/claude-sonnet-4-6"}},"channels":{"telegram":{"dmPolicy":"open","allowFrom":["*"]},"discord":{"dmPolicy":"open","allowFrom":["*"]},"whatsapp":{"dmPolicy":"open","allowFrom":["*"]}}}' \
  > /home/node/.openclaw/openclaw.json && \
- printf '#!/bin/sh\nset -e\nif [ -n "$CLAW_KNOWLEDGE_BASE" ]; then\n  printf "%s" "$CLAW_KNOWLEDGE_BASE" > /home/node/.openclaw/workspace/IDENTITY.md\nfi\nnode openclaw.mjs config unset voice 2>/dev/null || true\nnode openclaw.mjs doctor --fix --non-interactive 2>&1 || true\nexec node openclaw.mjs gateway --allow-unconfigured --bind lan\n' \
+ printf '#!/bin/sh\nset -e\nif [ -n "$CLAW_KNOWLEDGE_BASE" ]; then\n  printf "%%s" "$CLAW_KNOWLEDGE_BASE" > /home/node/.openclaw/workspace/IDENTITY.md\nfi\nmkdir -p /home/node/.openclaw/agents/main/sessions /home/node/.openclaw/credentials\nnode openclaw.mjs config unset voice 2>/dev/null || true\nnode openclaw.mjs doctor --fix --non-interactive 2>&1 || true\nexec node openclaw.mjs gateway --allow-unconfigured --bind lan\n' \
  > /home/node/.openclaw/entrypoint.sh && \
  chmod +x /home/node/.openclaw/entrypoint.sh
 
