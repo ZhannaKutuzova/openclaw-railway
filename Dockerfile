@@ -57,7 +57,9 @@ USER node
 RUN mkdir -p /home/node/.openclaw/workspace && \
  echo '{"gateway":{"bind":"lan","auth":{"mode":"token"},"controlUi":{"dangerouslyAllowHostHeaderOriginFallback":true,"dangerouslyDisableDeviceAuth":true,"allowInsecureAuth":true}},"agents":{"defaults":{"model":"anthropic/claude-sonnet-4-6"}},"channels":{"telegram":{"dmPolicy":"open","allowFrom":["*"]},"discord":{"dmPolicy":"open","allowFrom":["*"]},"whatsapp":{"dmPolicy":"open","allowFrom":["*"]}}}' \
  > /home/node/.openclaw/openclaw.json && \
- printf '#!/bin/sh\nset -e\nif [ -n "$CLAW_KNOWLEDGE_BASE" ]; then\n  printf "%s" "$CLAW_KNOWLEDGE_BASE" > /home/node/.openclaw/workspace/IDENTITY.md\nfi\nif [ -n "$OPENCLAW_GATEWAY_TOKEN" ]; then\n  node -e "const fs=require('fs');const p='/home/node/.openclaw/openclaw.json';const c=JSON.parse(fs.readFileSync(p,'utf8'));c.gateway=c.gateway||{};c.gateway.auth=c.gateway.auth||{};c.gateway.auth.mode='token';c.gateway.auth.token=process.env.OPENCLAW_GATEWAY_TOKEN;fs.writeFileSync(p,JSON.stringify(c,null,2));"\nfi\nnode openclaw.mjs config unset voice 2>/dev/null || true\nnode openclaw.mjs doctor --fix --non-interactive 2>&1 || true\nexec node openclaw.mjs gateway --allow-unconfigured --bind lan\n' \
+ echo 'var fs=require("fs");var p="/home/node/.openclaw/openclaw.json";var c=JSON.parse(fs.readFileSync(p,"utf8"));c.gateway=c.gateway||{};c.gateway.auth=c.gateway.auth||{};c.gateway.auth.mode="token";c.gateway.auth.token=process.env.OPENCLAW_GATEWAY_TOKEN;fs.writeFileSync(p,JSON.stringify(c,null,2));console.log("[entrypoint] Gateway token injected");' \
+ > /home/node/.openclaw/inject-token.js && \
+ printf '#!/bin/sh\nset -e\nif [ -n "$CLAW_KNOWLEDGE_BASE" ]; then\n  printf "%s" "$CLAW_KNOWLEDGE_BASE" > /home/node/.openclaw/workspace/IDENTITY.md\nfi\nif [ -n "$OPENCLAW_GATEWAY_TOKEN" ]; then\n  node /home/node/.openclaw/inject-token.js\nfi\nnode openclaw.mjs config unset voice 2>/dev/null || true\nnode openclaw.mjs doctor --fix --non-interactive 2>&1 || true\nexec node openclaw.mjs gateway --allow-unconfigured --bind lan\n' \
  > /home/node/.openclaw/entrypoint.sh && \
  chmod +x /home/node/.openclaw/entrypoint.sh
 
