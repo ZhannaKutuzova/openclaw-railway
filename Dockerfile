@@ -57,7 +57,7 @@ USER node
 RUN mkdir -p /home/node/.openclaw/workspace && \
  echo '{"gateway":{"bind":"lan","auth":{"mode":"token"},"controlUi":{"dangerouslyAllowHostHeaderOriginFallback":true,"dangerouslyDisableDeviceAuth":true,"allowInsecureAuth":true}},"agents":{"defaults":{"model":"anthropic/claude-sonnet-4-6"}},"channels":{"telegram":{"dmPolicy":"open","allowFrom":["*"]},"discord":{"dmPolicy":"open","allowFrom":["*"]},"whatsapp":{"dmPolicy":"open","allowFrom":["*"]}}}' \
  > /home/node/.openclaw/openclaw.json && \
- printf '#!/bin/sh\nset -e\nCONF=/home/node/.openclaw/openclaw.json\nif [ -n "$CLAW_KNOWLEDGE_BASE" ]; then\n printf "%%s" "$CLAW_KNOWLEDGE_BASE" > /home/node/.openclaw/workspace/IDENTITY.md\nfi\nnode -e "var f=\x27$CONF\x27,c=JSON.parse(require(\x27fs\x27).readFileSync(f,\x27utf8\x27));delete c.voice;require(\x27fs\x27).writeFileSync(f,JSON.stringify(c))" 2>/dev/null || true\nnode openclaw.mjs doctor --fix 2>/dev/null || true\nexec node openclaw.mjs gateway --allow-unconfigured --bind lan\n' \
+ printf '#!/bin/sh\nset -e\nif [ -n "$CLAW_KNOWLEDGE_BASE" ]; then\n  printf "%s" "$CLAW_KNOWLEDGE_BASE" > /home/node/.openclaw/workspace/IDENTITY.md\nfi\nnode openclaw.mjs config unset voice 2>/dev/null || true\nnode openclaw.mjs doctor --fix --non-interactive 2>&1 || true\nexec node openclaw.mjs gateway --allow-unconfigured --bind lan\n' \
  > /home/node/.openclaw/entrypoint.sh && \
  chmod +x /home/node/.openclaw/entrypoint.sh
 
